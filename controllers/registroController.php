@@ -5,18 +5,20 @@ namespace Controllers;
 use Exception;
 use Model\ActiveRecord;
 use Model\registro;
+use Model\actividades;
 use MVC\Router;
+use DateTime;
 
 class registroController extends ActiveRecord
 {
-    // Renderizar vista de registro
+
     public static function renderizarPagina(Router $router)
     {
         $router->render('registro/index', []);  
     }
 
     //*************************************************************************************** 
-    // Guardar Asistencia
+    // Guardar
     public static function guardarAPI()
     {
         getHeadersApi();
@@ -34,6 +36,17 @@ class registroController extends ActiveRecord
 
             $act_id = (int)$_POST['act_id'];
             
+            // Obtener los datos de la actividad ANTES de usarla
+            $actividad = actividades::find($act_id);
+            if (!$actividad || $actividad->situacion != 1 || $actividad->act_estado != 'ACTIVO') {
+                http_response_code(400);
+                echo json_encode([
+                    'codigo' => 0,
+                    'mensaje' => 'La actividad seleccionada no existe o no está disponible'
+                ]);
+                return;
+            }
+
             // Verificar si ya existe un registro para esta actividad (opcional)
             if (registro::existeRegistroActividad($act_id)) {
                 http_response_code(400);
@@ -65,14 +78,14 @@ class registroController extends ActiveRecord
             }
 
             // Crear el registro
-            $registro = new registro([
+            $nuevoRegistro = new registro([
                 'act_id' => $act_id,
                 'reg_fecha' => $fechaActual,
                 'estado_asistencia' => $estadoAsistencia,
                 'situacion' => 1
             ]);
 
-            $resultado = $registro->crear();
+            $resultado = $nuevoRegistro->crear();
 
             if ($resultado['resultado']) {
                 http_response_code(200);
@@ -80,7 +93,7 @@ class registroController extends ActiveRecord
                     'codigo' => 1,
                     'mensaje' => "Asistencia registrada como: {$estadoAsistencia}",
                     'estado_asistencia' => $estadoAsistencia,
-                    'diferencia_minutos' => $diferenciaMinutos
+                    'diferencia_minutos' => abs($diferenciaMinutos)
                 ]);
             } else {
                 throw new Exception('Error al crear el registro');
@@ -96,47 +109,56 @@ class registroController extends ActiveRecord
         }
     }
 
-    //********************************************************* */
-    //Este es un Join para poder mandar a traer todos los datos de la otra tabla
-
-
-    public static function obtenerRegistrosConActividades() {
-        $sql = "SELECT 
-                    r.reg_id,
-                    r.act_id,
-                    r.reg_fecha,
-                    r.estado_asistencia,
-                    r.situacion,
-                    a.act_nombre,
-                    a.act_fecha as fecha_programada_actividad
-                FROM registro r 
-                INNER JOIN actividades a ON r.act_id = a.act_id 
-                WHERE r.situacion = 1 
-                ORDER BY r.reg_fecha DESC";
-        
-        return self::fetchArray($sql);
-    }
-
-
-    
-    public static function existeRegistroActividad($act_id) {
-        $sql = "SELECT COUNT(*) as total FROM registro WHERE act_id = $act_id AND situacion = 1";
-        $resultado = self::fetchFirst($sql);
-        return $resultado['total'] > 0;
-    }
-
     //*************************************************************************** 
-    // Buscar registros con información de actividades
+    // Buscar registros CON FILTROS
     public static function buscarAPI()
     {
         try {
-            $data = registro::obtenerRegistrosConActividades();
+   
+            $filtroActividad = $_GET['actividad'] ?? '';
+            $filtroFechaInicio = $_GET['fecha_inicio'] ?? '';
+            $filtroFechaFin = $_GET['fecha_fin'] ?? '';
+            
+
+            $sql = "SELECT 
+                        r.reg_id,
+                        r.act_id,
+                        r.reg_fecha,
+                        r.estado_asistencia,
+                        r.situacion,
+                        a.act_nombre,
+                        a.act_fecha as fecha_programada_actividad
+                    FROM registro r 
+                    INNER JOIN actividades a ON r.act_id = a.act_id 
+                    WHERE r.situacion = 1";
+            
+
+            if (!empty($filtroActividad)) {
+                $sql .= " AND r.act_id = " . (int)$filtroActividad;
+            }
+            
+            if (!empty($filtroFechaInicio)) {
+                $sql .= " AND DATE(r.reg_fecha) >= '" . date('Y-m-d', strtotime($filtroFechaInicio)) . "'";
+            }
+            
+            if (!empty($filtroFechaFin)) {
+                $sql .= " AND DATE(r.reg_fecha) <= '" . date('Y-m-d', strtotime($filtroFechaFin)) . "'";
+            }
+            
+            $sql .= " ORDER BY r.reg_fecha DESC";
+            
+            $data = self::fetchArray($sql);
 
             http_response_code(200);
             echo json_encode([
                 'codigo' => 1,
                 'mensaje' => 'Registros obtenidos correctamente',  
-                'data' => $data
+                'data' => $data,
+                'filtros_aplicados' => [
+                    'actividad' => $filtroActividad,
+                    'fecha_inicio' => $filtroFechaInicio,
+                    'fecha_fin' => $filtroFechaFin
+                ]
             ]);
         } catch (Exception $e) {
             http_response_code(400);
@@ -149,7 +171,7 @@ class registroController extends ActiveRecord
     }
 
     //*************************************************************************** 
-    // Obtener actividades activas para el select
+    // Obtener actividades situacion 1
     public static function obtenerActividadesAPI()
     {
         try {
@@ -176,8 +198,38 @@ class registroController extends ActiveRecord
         }
     }
 
+    //*************************************************************************** 
+    // ObtenerActividades
+    public static function obtenerTodasActividadesAPI()
+    {
+        try {
+            $sql = "SELECT act_id, act_nombre, act_fecha, act_estado 
+                    FROM actividades 
+                    WHERE situacion = 1 
+                    ORDER BY act_nombre ASC";
+            
+            $data = self::fetchArray($sql);
+
+            http_response_code(200);
+            echo json_encode([
+                'codigo' => 1,
+                'mensaje' => 'Todas las actividades obtenidas correctamente',  
+                'data' => $data
+            ]);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode([
+                'codigo' => 0,
+                'mensaje' => 'Error al obtener las actividades',
+                'detalle' => $e->getMessage(),
+            ]);
+        }
+    }
+
     //****************************************************************** 
-    // Eliminar registro
+    
+  //Eliminación
+  
     public static function EliminarAPI()
     {
         try {
@@ -187,7 +239,8 @@ class registroController extends ActiveRecord
                 throw new Exception('ID de registro inválido');
             }
 
-            $ejecutar = registro::EliminarRegistro($id);
+            $sql = "UPDATE registro SET situacion = 0 WHERE reg_id = $id";
+            $ejecutar = self::SQL($sql);
 
             http_response_code(200);
             echo json_encode([
@@ -203,6 +256,4 @@ class registroController extends ActiveRecord
             ]);
         }
     }
-
-    
 }

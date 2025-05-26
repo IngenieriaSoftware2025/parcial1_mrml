@@ -41,8 +41,8 @@
     </div>
     
     <div class="text-center">
-        <a href="/app01_mrml/productos" class="btn btn-comenzar">
-            <i class="bi bi-basket me-2"></i>Comenzar a organizar
+        <a href="/parcial1_mrml/actividades" class="btn btn-comenzar">
+            <i class="bi bi-basket me-2"></i>Crear actividad
         </a>
     </div>
     

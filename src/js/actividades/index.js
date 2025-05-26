@@ -165,7 +165,7 @@ const datatable = new DataTable('#TableActividades', {
     ]
 });
 
-// 🎯 FUNCIÓN: Llenar formulario para modificar
+//formulario para modificar
 const llenarFormulario = (event) => {
     const datos = event.currentTarget.dataset
 
@@ -190,7 +190,7 @@ const limpiarTodo = () => {
     BtnModificar.classList.add('d-none');
 }
 
-//FUNCIÓN: Modificar Actividades
+// Modificar Actividades
 const ModificarActividades = async (event) => {
     event.preventDefault();
     BtnModificar.disabled = true;
@@ -299,10 +299,10 @@ const EliminarActividades = async (e) => {
 }
 
 
-// 🎯 INICIALIZACIÓN: Event Listeners (CAMBIOS en nombres)
+//Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     
-    // 🌍 NUEVO: Establecer fecha actual por defecto
+    // Establecer fecha actual por defecto
     const fechaInput = document.getElementById('act_fecha');
     if (fechaInput) {
         fechaInput.value = new Date().toISOString().split('T')[0];
@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// EVENT LISTENERS: (CAMBIOS en nombres de variables)
+//EVENT LISTENERS
 BuscarActividades();
 datatable.on('click', '.eliminar', EliminarActividades);  
 datatable.on('click', '.modificar', llenarFormulario);

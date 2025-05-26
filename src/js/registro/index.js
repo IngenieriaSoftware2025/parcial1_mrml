@@ -1,20 +1,28 @@
-// 🎯 IMPORTS NECESARIOS
+// IMPORTS NECESARIOS
 import { Dropdown } from "bootstrap";
 import Swal from "sweetalert2";
 import { validarFormulario } from '../funciones';
 import DataTable from "datatables.net-bs5";
 import { lenguaje } from "../lenguaje";
 
-// 🎯 ELEMENTOS DEL DOM
+// ELEMENTOS DEL DOM
 const FormRegistro = document.getElementById('FormRegistro'); 
 const BtnGuardar = document.getElementById('BtnGuardar');
 const BtnLimpiar = document.getElementById('BtnLimpiar');
 const selectActividades = document.getElementById('act_id');
 
-// FUNCIÓN: Cargar actividades disponibles en el select
+// ELEMENTOS PARA FILTROS
+
+const filtroActividad = document.getElementById('filtro_actividad');
+const filtroFechaInicio = document.getElementById('filtro_fecha_inicio');
+const filtroFechaFin = document.getElementById('filtro_fecha_fin');
+const btnFiltrar = document.getElementById('btn_filtrar');
+const btnLimpiarFiltros = document.getElementById('btn_limpiar_filtros');
+
+//Cargar actividades disponibles en el select
 const CargarActividades = async () => {
     try {
-        const url = '/parcial1_mrml/registro/obtenerRegistrosConActividades';
+        const url = '/parcial1_mrml/registro/obtenerActividadesAPI';
         const respuesta = await fetch(url);
         const datos = await respuesta.json();
         
@@ -25,7 +33,6 @@ const CargarActividades = async () => {
                 const option = document.createElement('option');
                 option.value = actividad.act_id;
                 
-                // Formatear fecha para mostrar
                 const fecha = new Date(actividad.act_fecha);
                 const fechaFormateada = fecha.toLocaleString('es-ES', {
                     year: 'numeric',
@@ -48,7 +55,32 @@ const CargarActividades = async () => {
     }
 };
 
-// FUNCIÓN: Mostrar información de puntualidad en tiempo real
+
+//Cargar actividades para filtros
+const CargarActividadesFiltro = async () => {
+    try {
+        const url = '/parcial1_mrml/registro/obtenerTodasActividadesAPI';
+        const respuesta = await fetch(url);
+        const datos = await respuesta.json();
+        
+        if (datos.codigo == 1) {
+            if (filtroActividad) {
+                filtroActividad.innerHTML = '<option value="">Todas las actividades</option>';
+                
+                datos.data.forEach(actividad => {
+                    const option = document.createElement('option');
+                    option.value = actividad.act_id;
+                    option.textContent = `${actividad.act_nombre} (${actividad.act_estado})`;
+                    filtroActividad.appendChild(option);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error al cargar actividades para filtro:', error);
+    }
+};
+
+// Mostrar información de puntTUALIDAD, OSEA LOS  minutos
 const MostrarInfoPuntualidad = () => {
     const actividadSeleccionada = selectActividades.selectedOptions[0];
     
@@ -62,13 +94,11 @@ const MostrarInfoPuntualidad = () => {
     const diferenciaMs = ahora - fechaActividad;
     const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
 
-    // Como se mostrara el estado de una forma dinamica
     let estado, clase, icono;
     if (diferenciaMinutos <= 5) {
         estado = 'PUNTUAL';
         clase = 'success';
         icono = 'bi-check-circle-fill';
-
     } else if (diferenciaMinutos <= 15) {
         estado = 'TARDANZA';
         clase = 'warning';
@@ -79,7 +109,6 @@ const MostrarInfoPuntualidad = () => {
         icono = 'bi-x-circle-fill';
     }
 
-    // Crear o actualizar el elemento de información
     let infoElement = document.getElementById('info-puntualidad');
     if (!infoElement) {
         infoElement = document.createElement('div');
@@ -103,7 +132,8 @@ const MostrarInfoPuntualidad = () => {
     `;
 };
 
-// 🎯 FUNCIÓN: Guardar registro de asistencia
+
+//Guardar registro de asistencia
 const GuardarRegistro = async (event) => {
     event.preventDefault();
     BtnGuardar.disabled = true;
@@ -135,7 +165,6 @@ const GuardarRegistro = async (event) => {
         const { codigo, mensaje, estado_asistencia, diferencia_minutos } = datos;
 
         if (codigo == 1) {
-            // Mostrar alerta con información detallada
             let iconoResultado = 'success';
             if (estado_asistencia === 'TARDANZA') iconoResultado = 'warning';
             if (estado_asistencia === 'IMPUNTUAL') iconoResultado = 'error';
@@ -180,9 +209,30 @@ const GuardarRegistro = async (event) => {
     BtnGuardar.disabled = false;
 };
 
-// 🎯 FUNCIÓN: Buscar registros
+
+
+//Buscar registros CON FILTROS
 const BuscarRegistros = async () => {
-    const url = '/parcial1_mrml/registro/buscarAPI';
+    // Construir URL con filtros
+    let url = '/parcial1_mrml/registro/buscarAPI';
+    const params = new URLSearchParams();
+    
+    if (filtroActividad && filtroActividad.value) {
+        params.append('actividad', filtroActividad.value);
+    }
+    
+    if (filtroFechaInicio && filtroFechaInicio.value) {
+        params.append('fecha_inicio', filtroFechaInicio.value);
+    }
+    
+    if (filtroFechaFin && filtroFechaFin.value) {
+        params.append('fecha_fin', filtroFechaFin.value);
+    }
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+
     const config = { method: 'GET' };
 
     try {
@@ -193,6 +243,13 @@ const BuscarRegistros = async () => {
         if (codigo == 1) {
             datatable.clear().draw();
             datatable.rows.add(data).draw();
+            
+            // Mostrar cantidad de registros filtrados
+            const cantidadRegistros = data.length;
+            const textoFiltros = document.getElementById('texto-filtros');
+            if (textoFiltros) {
+                textoFiltros.textContent = `${cantidadRegistros} registro(s) encontrado(s)`;
+            }
         } else {
             await Swal.fire({
                 position: "center",
@@ -207,7 +264,19 @@ const BuscarRegistros = async () => {
     }
 };
 
-//CONFIGURACIÓN DEL DATATABLE
+
+
+//Limpiar filtros
+const LimpiarFiltros = () => {
+    if (filtroActividad) filtroActividad.value = '';
+    if (filtroFechaInicio) filtroFechaInicio.value = '';
+    if (filtroFechaFin) filtroFechaFin.value = '';
+    BuscarRegistros();
+};
+
+
+// CONFIGURACIÓN DEL DATATABLE
+
 const datatable = new DataTable('#TableRegistros', {
     dom: `
         <"row mt-3 justify-content-between" 
@@ -223,7 +292,7 @@ const datatable = new DataTable('#TableRegistros', {
     `,
     language: lenguaje,
     data: [],
-    order: [[1, 'desc']], // Ordenar por fecha de registro descendente
+    order: [[1, 'desc']],
     columns: [
         {
             title: 'No.',
@@ -274,6 +343,10 @@ const datatable = new DataTable('#TableRegistros', {
             render: (data) => {
                 let clase = '';
                 let icono = '';
+
+
+                //******** */
+                //utilioce una alarta para que diga como se encvuentra
                 
                 switch (data) {
                     case 'PUNTUAL':
@@ -316,14 +389,41 @@ const datatable = new DataTable('#TableRegistros', {
     ]
 });
 
-//Limpiar formulario
+//***************************************************** */
+
+// Limpiar formulario
 const limpiarTodo = () => {
     FormRegistro.reset();
     document.getElementById('info-puntualidad')?.remove();
-    CargarActividades(); // Recargar actividades
+    CargarActividades();
 };
+//************************************************* */
+//Actualizzo la fecha 
 
-// 🎯 FUNCIÓN: Eliminar registro
+function actualizarFechaActual() {
+    const ahora = new Date();
+    const fechaFormateada = ahora.toLocaleString('es-ES', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    
+    const elemento = document.getElementById('fecha-actual');
+    if (elemento) {
+        elemento.textContent = fechaFormateada;
+    }
+}
+
+setInterval(actualizarFechaActual, 1000);
+actualizarFechaActual();
+
+
+
+//************************************************* */
+// Eliminar registro
 const EliminarRegistro = async (e) => {
     const idRegistro = e.currentTarget.dataset.id;
 
@@ -331,7 +431,10 @@ const EliminarRegistro = async (e) => {
         position: "center",
         icon: "warning",
         title: "¿Confirmar eliminación?",
-        text: '¿Está seguro que desea eliminar este registro de asistencia?',
+        html: `
+            <p>¿Está seguro que desea eliminar este registro de asistencia?</p>
+            <small class="text-muted">Esta acción se puede deshacer contactando al administrador.</small>
+        `,
         showConfirmButton: true,
         confirmButtonText: 'Sí, Eliminar',
         confirmButtonColor: '#dc3545',
@@ -372,17 +475,43 @@ const EliminarRegistro = async (e) => {
     }
 };
 
-//EVENT LISTENERS
+
+
+//**************************************************** */
+// EVENT LISTENERS
 document.addEventListener('DOMContentLoaded', () => {
     CargarActividades();
+    CargarActividadesFiltro();
 });
 
-// Mostrar información de puntualidad cuando cambia la selección
 selectActividades.addEventListener('change', MostrarInfoPuntualidad);
-
 FormRegistro.addEventListener('submit', GuardarRegistro);
 BtnLimpiar.addEventListener('click', limpiarTodo);
 datatable.on('click', '.eliminar', EliminarRegistro);
+
+
+
+//filtros
+
+if (btnFiltrar) {
+    btnFiltrar.addEventListener('click', BuscarRegistros);
+}
+
+if (btnLimpiarFiltros) {
+    btnLimpiarFiltros.addEventListener('click', LimpiarFiltros);
+}
+
+if (filtroActividad) {
+    filtroActividad.addEventListener('change', BuscarRegistros);
+}
+
+if (filtroFechaInicio) {
+    filtroFechaInicio.addEventListener('change', BuscarRegistros);
+}
+
+if (filtroFechaFin) {
+    filtroFechaFin.addEventListener('change', BuscarRegistros);
+}
 
 // Cargar datos iniciales
 BuscarRegistros();

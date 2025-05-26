@@ -4,11 +4,11 @@ CONTENEDOR PRINCIPAL Y FONDO
 =======================================================
 -->
 
-<!-- 1️⃣ CONTENEDOR PRINCIPAL CON FONDO GRADIENTE -->
+<!-- CONTENEDOR PRINCIPAL CON FONDO GRADIENTE -->
 <div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center" 
      style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
     
-    <!-- 2️⃣ SISTEMA DE GRILLA RESPONSIVE -->
+    <!-- SISTEMA DE GRILLA RESPONSIVE -->
     <div class="row w-100 justify-content-center">
         <div class="col-11 col-md-10 col-lg-8 col-xl-6">
 
@@ -28,11 +28,11 @@ HEADER DEL FORMULARIO
 =======================================================
 -->
 
-                <!-- 4️⃣ HEADER CON GRADIENTE Y TÍTULO -->
+                <!-- HEADER CON GRADIENTE Y TÍTULO -->
                 <div class="card-header text-center py-4 border-0" 
                      style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 25px 25px 0 0;">
                     
-                    <!-- 5️⃣ CONTENIDO DEL HEADER: ICONO + TÍTULO -->
+                    <!-- CONTENIDO DEL HEADER: ICONO + TÍTULO -->
                     <div class="d-flex align-items-center justify-content-center mb-3">
                         <!-- Icono circular blanco -->
                         <div class="bg-white rounded-circle p-3 shadow-sm me-3">
