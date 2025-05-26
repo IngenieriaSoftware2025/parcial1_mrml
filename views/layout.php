@@ -260,9 +260,9 @@
                 
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0" style="margin: 0;">
                     <li class="nav-item">
-                        <a class="nav-link" aria-current="page" href="/ejemplo/"><i class="bi bi-house-fill me-2"></i>Inicio</a>
+                        <a class="nav-link" aria-current="page" href="/parcial"><i class="bi bi-house-fill me-2"></i>Inicio</a>
                     </li>
-  
+  <!-- 1 -->
                     <div class="nav-item dropdown " >
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                             <i class="bi bi-gear me-2"></i>Actividades
@@ -273,8 +273,17 @@
                                 <a class="dropdown-item nav-link text-white " href="/parcial1_mrml/actividades"><i class="ms-lg-0 ms-2 bi bi-plus-circle me-2"></i>Registrar</a>
                             </li>
                         
-                    
-                        
+                        </ul>
+                    </div> 
+<!-- 2 -->
+                    <div class="nav-item dropdown " >
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-gear me-2"></i>Registros
+                        </a>
+                        <ul class="dropdown-menu  dropdown-menu-dark "id="dropwdownRevision" style="margin: 0;">
+                            <li>
+                                <a class="dropdown-item nav-link text-white " href="/parcial1_mrml/registro"><i class="ms-lg-0 ms-2 bi bi-plus-circle me-2"></i>Registrar</a>
+                            </li>
                         </ul>
                     </div> 
 

@@ -5,7 +5,6 @@ namespace Controllers;
 use Exception;
 use Model\ActiveRecord;
 use Model\actividades;
-use Model\actvidades;
 use MVC\Router;
 
 class actividadesController extends ActiveRecord
