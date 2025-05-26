@@ -2,7 +2,7 @@
 
 namespace Model;
 
-class actvidades extends ActiveRecord {
+class actividades extends ActiveRecord {
 
     //El nombre de la tabla de mi Aqua
     public static $tabla = 'actividades';
