@@ -265,12 +265,12 @@
   
                     <div class="nav-item dropdown " >
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                            <i class="bi bi-gear me-2"></i>Dropdown
+                            <i class="bi bi-gear me-2"></i>Actividades
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-dark "id="dropwdownRevision" style="margin: 0;">
                             <!-- <h6 class="dropdown-header">Información</h6> -->
                             <li>
-                                <a class="dropdown-item nav-link text-white " href="/aplicaciones/nueva"><i class="ms-lg-0 ms-2 bi bi-plus-circle me-2"></i>Subitem</a>
+                                <a class="dropdown-item nav-link text-white " href="/parcial1_mrml/actividades"><i class="ms-lg-0 ms-2 bi bi-plus-circle me-2"></i>Registrar</a>
                             </li>
                         
                     
@@ -295,6 +295,7 @@
     <div class="container-fluid pt-5 mb-4" style="min-height: 85vh">
         
         <?php echo $contenido; ?>
+        
     </div>
     <div class="container-fluid " >
         <div class="row justify-content-center text-center">

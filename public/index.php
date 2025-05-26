@@ -13,10 +13,10 @@ $router->get('/', [AppController::class,'index']);
 
 //rutas de actividades
 $router->get('/actividades', [actividadesController::class, 'renderizarPagina']);
-$router->post('/actvidades/guardarAPI', [actividadesController::class, 'guardarAPI']);
-$router->get('/actvidades/buscarAPI', [actividadesController::class, 'buscarAPI']);
-$router->post('/actvidades/modificarAPI', [actividadesController::class, 'modificarAPI']);
-$router->get('/actvidades/eliminar', [actividadesController::class, 'EliminarAPI']);
+$router->post('/actividades/guardarAPI', [actividadesController::class, 'guardarAPI']);
+$router->get('/actividades/buscarAPI', [actividadesController::class, 'buscarAPI']);
+$router->post('/actividades/modificarAPI', [actividadesController::class, 'modificarAPI']);
+$router->get('/actividades/eliminar', [actividadesController::class, 'EliminarAPI']);
 
 
 // Comprueba y valida las rutas, que existan y les asigna las funciones del Controlador
